@@ -1,7 +1,6 @@
 FROM ghcr.io/loong64/debian:trixie-slim AS build-lat
 ARG TARGETARCH
 
-# git ninja-build libssl-dev libc6 gcc g++ pkg-config libglib2.0-dev libdrm-dev lsb-release make python3-setuptools
 ARG DEPENDENCIES="        \
         ccache            \
         curl              \
@@ -11,6 +10,7 @@ ARG DEPENDENCIES="        \
         libc6             \
         libdrm-dev        \
         libglib2.0-dev    \
+        libkeyutils-dev   \
         libssl-dev        \
         lsb-release       \
         make              \
@@ -23,28 +23,31 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update \
     && apt-get install -y ${DEPENDENCIES}
 
-ARG VERSION=master
+ARG VERSION
 ARG WORKDIR=/opt/lat
 
 WORKDIR ${WORKDIR}
 
 RUN set -ex \
-    && git clone --depth=1 --recursive --branch ${VERSION} https://github.com/lat-opensource/lat ${WORKDIR} \
-    && curl -sSL "https://github.com/lat-opensource/lat/commit/27026fb60dc1707962539d8887ee4a9e4fb7d3ed.patch" | git apply
+    && git clone --depth=1 --recursive --branch master https://github.com/lat-opensource/lat ${WORKDIR}
 
 ENV USE_CCACHE=1
+ADD lat_loong64.patch /opt/lat_loong64.patch
 
 RUN --mount=type=cache,target=/root/.cache/ccache \
-    cd latxbuild && ./build-release-nw.sh
+    git apply /opt/lat_loong64.patch \
+    && sed -i 's@rm -rf@# rm -rf@g' latxbuild/build-release-nw.sh \
+    && cd latxbuild \
+    && ./build-release-nw.sh
 
 FROM ghcr.io/loong64/debian:trixie-slim
 ARG TARGETARCH
 
 WORKDIR /opt/dist
 
-COPY --from=build-lat /opt/lat/lat-Debian-nw /opt/dist/lat-Debian-nw
+COPY --from=build-lat /opt/lat/lat-Debian-nw.tar.gz /opt/dist/
 
-RUN tar -czf lat-Debian-nw.tar.gz lat-Debian-nw
+RUN sha256sum lat-Debian-nw.tar.gz > lat-Debian-nw.tar.gz.sha256sum
 
 VOLUME /dist
 

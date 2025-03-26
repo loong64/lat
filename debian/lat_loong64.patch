@@ -1,0 +1,42 @@
+diff --git a/linux-user/syscall_defs.h b/linux-user/syscall_defs.h
+index 76ae0b5..a6442f6 100644
+--- a/linux-user/syscall_defs.h
++++ b/linux-user/syscall_defs.h
+@@ -1527,8 +1527,12 @@ struct target_winsize {
+ #include "termbits.h"
+ 
+ #define HUGETLB_FLAG_ENCODE_SHIFT   26
++#ifndef MAP_HUGE_2MB
+ #define MAP_HUGE_2MB     (21 << HUGETLB_FLAG_ENCODE_SHIFT)
++#endif
++#ifndef MAP_HUGE_1GB
+ #define MAP_HUGE_1GB     (30 << HUGETLB_FLAG_ENCODE_SHIFT)
++#endif
+ #define LEGACY_MAP_MASK (TARGET_MAP_SHARED \
+         | TARGET_MAP_PRIVATE \
+         | TARGET_MAP_FIXED \
+diff --git a/meson.build b/meson.build
+index a30002f..b021eee 100644
+--- a/meson.build
++++ b/meson.build
+@@ -17,7 +17,7 @@ cc = meson.get_compiler('c')
+ config_host = keyval.load(meson.current_build_dir() / 'config-host.mak')
+ enable_static = 'CONFIG_STATIC' in config_host
+ 
+-latx_version_h = vcs_tag(command : ['git', 'describe'],
++latx_version_h = vcs_tag(command : ['cat', 'VERSION'],
+                         fallback : 'unknown',
+ 			input : 'linux-user/latx-version.h.in',
+                         output :'latx-version.h')
+@@ -206,7 +206,10 @@ config_host_data.set('CONFIG_MALLOC_TRIM', has_malloc_trim)
+ lsb_release = find_program('lsb_release', required: false)
+ if lsb_release.found()
+   lsb_release_output = run_command('lsb_release', '-si').stdout().strip()
+-  if lsb_release_output == 'Loongnix'
++  if lsb_release_output == 'Debian'
++    config_host_data.set('HAVE_DRM_H', cc.has_header('libdrm/drm.h'))
++    config_host_data.set('IS_DEBIAN', 'true')
++  elif lsb_release_output == 'Loongnix'
+     config_host_data.set('HAVE_DRM_H', cc.has_header('libdrm/drm.h'))
+     config_host_data.set('IS_LOONGNIX', 'true')
+   elif lsb_release_output == 'Arch'
