@@ -1,0 +1,67 @@
+diff --git a/linux-user/main.c b/linux-user/main.c
+index a1e476b..8661a9a 100644
+--- a/linux-user/main.c
++++ b/linux-user/main.c
+@@ -55,7 +55,6 @@ int mydebug = 1;
+ #include "latx-config.h"
+ #include "latx-options.h"
+ #include "aot.h"
+-#include "latx-version.h"
+ #include <openssl/evp.h>
+ #endif
+ #ifdef CONFIG_LATX_PERF
+diff --git a/meson.build b/meson.build
+index 6e21240..9d27ecf 100644
+--- a/meson.build
++++ b/meson.build
+@@ -16,11 +16,6 @@ sh = find_program('sh')
+ cc = meson.get_compiler('c')
+ config_host = keyval.load(meson.current_build_dir() / 'config-host.mak')
+ enable_static = 'CONFIG_STATIC' in config_host
+-
+-latx_version_h = vcs_tag(command : ['git', 'describe'],
+-                        fallback : 'unknown',
+-			input : 'linux-user/latx-version.h.in',
+-                        output :'latx-version.h')
+ # Allow both shared and static libraries unless --enable-static
+ static_kwargs = enable_static ? {'static': true} : {}
+ 
+@@ -98,6 +93,16 @@ endif
+ # Dependencies #
+ ################
+ 
++latx_version = get_option('latx_version')
++if latx_version == ''
++  latx_version = run_command('git', 'describe', '--always', check: false).stdout().strip()
++endif
++if latx_version == ''
++  latx_version = 'unknown'
++endif
++
++add_project_arguments('-DLATX_VERSION="' + latx_version + '"', language: ['c', 'cpp'])
++
+ # The path to glib.h is added to all compilation commands.  This was
+ # grandfathered in from the QEMU Makefiles.
+ add_project_arguments(config_host['GLIB_CFLAGS'].split(),
+diff --git a/meson_options.txt b/meson_options.txt
+index ffe764c..383acac 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -127,3 +127,5 @@ option('fdt', type: 'combo', value: 'auto',
+        description: 'Whether and how to find the libfdt library')
+ option('tests', type : 'feature', value : 'auto',
+        description: 'Tests build support')
++option('latx_version', type: 'string', value: '',
++       description: 'Custom version string')
+diff --git a/target/i386/latx/include/aot.h b/target/i386/latx/include/aot.h
+index 07c2d97..1ab1fa9 100644
+--- a/target/i386/latx/include/aot.h
++++ b/target/i386/latx/include/aot.h
+@@ -10,7 +10,6 @@
+ #include "qemu/cutils.h"
+ #include "qemu/units.h"
+ #include "segment.h"
+-#include "latx-version.h"
+ #include "aot_link_seg.h"
+ #include "ts.h"
+ #include "aot_lib.h"

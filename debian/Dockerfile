@@ -32,9 +32,12 @@ RUN set -ex \
 
 WORKDIR ${WORKDIR}
 
+ADD lat-loong64.patch /tmp/lat-loong64.patch
+
 ENV USE_CCACHE=1
 RUN --mount=type=cache,target=/root/.cache/ccache \
     set -x \
+    && git apply /tmp/lat-loong64.patch \
     && ./latxbuild/build-release.sh \
     && mkdir -p dist \
     && mv lat-${VERSION}-*.tar.xz dist/lat-${VERSION}-${TARGETARCH}.tar.xz \
