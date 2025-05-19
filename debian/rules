@@ -1,0 +1,73 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_test:
+	true
+
+override_dh_auto_clean:
+	rm -rf build32 build64
+
+override_dh_auto_configure:
+	mkdir -p build32 build64
+
+override_dh_auto_build:
+	cd build32 && ../configure \
+	--target-list=i386-linux-user \
+	--disable-capstone \
+	--disable-docs \
+	--disable-gcrypt \
+	--disable-glusterfs \
+	--disable-gnutls \
+	--disable-gtk \
+	--disable-kvm \
+	--disable-libiscsi \
+	--disable-libnfs \
+	--disable-libssh \
+	--disable-linux-io-uring \
+	--disable-nettle \
+	--disable-opengl \
+	--disable-qom-cast-debug \
+	--disable-sdl \
+	--disable-tools \
+	--disable-tpm \
+	--disable-vde \
+	--disable-vhost-crypto \
+	--disable-vhost-kernel \
+	--disable-vhost-net \
+	--disable-vhost-user \
+	--disable-vnc \
+	--enable-latx \
+	--enable-guest-base-zero \
+	--disable-debug-info \
+	--optimize-O1 \
+	--extra-ldflags=-ldl \
+	--disable-blobs \
+	--disable-docs \
+	--disable-werror \
+	--disable-pie \
+	--disable-linux-io-uring
+	cd build32 && ninja -j$$(nproc)
+
+	cd build64 && ../configure \
+    --target-list=x86_64-linux-user \
+	--disable-blobs \
+	--disable-debug-info \
+	--disable-docs \
+	--disable-linux-io-uring \
+	--disable-werror \
+	--enable-kzt \
+	--enable-latx \
+	--extra-ldflags=-ldl \
+	--optimize-O1
+	cd build64 && ninja -j$$(nproc)
+
+override_dh_auto_install:
+	mkdir -p debian/tmp/etc/binfmt.d debian/tmp/etc/sysctl.d
+	install -Dm755 build32/latx-i386 debian/tmp/usr/bin/latx-i386
+	install -Dm755 build64/latx-x86_64 debian/tmp/usr/bin/latx-amd64
+	echo ':latx-i386:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x03\x00:\xff\xff\xff\xff\xff\xfe\xfe\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/latx-i386:' > debian/tmp/etc/binfmt.d/latx-i386.conf
+	echo ':latx-amd64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x3e\x00:\xff\xff\xff\xff\xff\xfe\xfe\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/latx-amd64:' > debian/tmp/etc/binfmt.d/latx-amd64.conf
+	echo 'vm.mmap_min_addr = 65536' > debian/tmp/etc/sysctl.d/mmap_min_addr.conf
+	dh_install

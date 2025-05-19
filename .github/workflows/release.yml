@@ -82,7 +82,7 @@ jobs:
 
       - name: Build Binaries
         run: |
-          docker buildx build --platform linux/loong64 --build-arg VERSION=${{ env.app_version }} -t ${{ env.app_name }}-debian-loong64:${{ env.app_version }} --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max debian --load
+          docker buildx build --platform linux/loong64 --build-arg VERSION=${{ env.app_version }} -t ${{ env.app_name }}-debian-loong64:${{ env.app_version }} --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max . --load
 
       - name: Upgrade Release
         run: |

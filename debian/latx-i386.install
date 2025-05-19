@@ -1,0 +1,2 @@
+usr/bin/latx-i386
+etc/binfmt.d/latx-i386.conf

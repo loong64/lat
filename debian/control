@@ -1,0 +1,25 @@
+Source: lat
+Section: utils
+Priority: optional
+Maintainer: loong64 <support@loong64.com>
+Build-Depends: debhelper-compat (=13), ninja-build, libdrm-dev, libglib2.0-dev, libkeyutils-dev, libssl-dev
+Standards-Version: 1.6.1
+Homepage: https://github.com/lat-opensource/lat
+
+Package: latx-i386
+Architecture: loong64
+Depends: ${shlibs:Depends}, ${misc:Depends}, latx-common
+Description: LATX emulator for i386 binaries
+ This package provides the user-mode emulator for i386 binaries using LATX.
+
+Package: latx-amd64
+Architecture: loong64
+Depends: ${shlibs:Depends}, ${misc:Depends}, latx-common
+Description: LATX emulator for x86_64 binaries
+ This package provides the user-mode emulator for x86_64 binaries using LATX.
+
+Package: latx-common
+Architecture: all
+Depends: ${misc:Depends}
+Description: Common files for LATX emulators
+ Shared configuration files for LATX emulator packages.

@@ -1,9 +1,11 @@
-FROM ghcr.io/loong64/debian:trixie-slim AS build-lat
+FROM ghcr.io/loong64/debian:trixie-slim AS base
 ARG TARGETARCH
 
 ARG DEPENDENCIES="         \
         ccache             \
         curl               \
+        devscripts         \
+        equivs             \
         gcc                \
         git                \
         g++                \
@@ -32,24 +34,33 @@ RUN set -ex \
 
 WORKDIR ${WORKDIR}
 
-ADD lat-loong64.patch /tmp/lat-loong64.patch
+FROM base AS build-binary
 
 ENV USE_CCACHE=1
 RUN --mount=type=cache,target=/root/.cache/ccache \
     set -x \
-    && git apply /tmp/lat-loong64.patch \
     && ./latxbuild/build-release.sh \
     && mkdir -p dist \
     && mv lat-${VERSION}-*.tar.xz dist/lat-${VERSION}-${TARGETARCH}.tar.xz \
     && cd dist \
     && sha256sum lat-${VERSION}-${TARGETARCH}.tar.xz > lat-${VERSION}-${TARGETARCH}.tar.xz.sha256
 
+FROM base AS build-deb
+
+ENV USE_CCACHE=1
+RUN --mount=type=cache,target=/root/.cache/ccache \
+    set -x \
+    && dpkg-buildpackage -b -rfakeroot -us -uc \
+    && cd .. \
+    && rm -rf lat
+
 FROM ghcr.io/loong64/debian:trixie-slim
 ARG TARGETARCH
 
 WORKDIR /opt/dist
 
-COPY --from=build-lat /opt/lat/dist/ /opt/dist/
+COPY --from=build-deb /opt/ /opt/dist/
+COPY --from=build-binary /opt/lat/dist/ /opt/dist/
 
 VOLUME /dist
 

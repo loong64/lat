@@ -1,0 +1,2 @@
+usr/bin/latx-amd64
+etc/binfmt.d/latx-amd64.conf
