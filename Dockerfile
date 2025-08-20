@@ -1,4 +1,6 @@
-FROM ghcr.io/loong64/debian:trixie-slim AS base
+ARG BASE_IMAGE=ghcr.io/loong64/debian:trixie-slim
+
+FROM ${BASE_IMAGE} AS base
 ARG TARGETARCH
 
 ARG DEPENDENCIES="         \
@@ -32,11 +34,12 @@ ARG WORKDIR=/opt/lat
 RUN set -ex \
     && git clone --depth=1 --recursive -b ${VERSION} https://github.com/lat-opensource/lat ${WORKDIR}
 
+ENV USE_CCACHE=1
 WORKDIR ${WORKDIR}
 
 FROM base AS build-binary
+ARG TARGETARCH
 
-ENV USE_CCACHE=1
 RUN --mount=type=cache,target=/root/.cache/ccache \
     set -x \
     && ./latxbuild/build-release.sh \
@@ -46,8 +49,9 @@ RUN --mount=type=cache,target=/root/.cache/ccache \
     && sha256sum lat-${VERSION}-${TARGETARCH}.tar.xz > lat-${VERSION}-${TARGETARCH}.tar.xz.sha256
 
 FROM base AS build-deb
+ARG TARGETARCH
 
-ENV USE_CCACHE=1
+COPY debian .
 RUN --mount=type=cache,target=/root/.cache/ccache \
     set -x \
     && dpkg-buildpackage -b -rfakeroot -us -uc \
