@@ -67,6 +67,13 @@ jobs:
     if: ${{ needs.check-binaries.outputs.app_build == '1' }}
     env:
       app_version: ${{ needs.check-binaries.outputs.app_version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ 'debian' ]
+        # suite: [ 'trixie', 'forky' ]
+        suite: [ 'trixie' ]
+
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -76,17 +83,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.app_name }}-${{ matrix.os }}-${{ matrix.suite }}-build-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-${{ env.app_name }}-${{ matrix.os }}-${{ matrix.suite }}-build-
             ${{ runner.os }}-buildx-
 
       - name: Build Binaries
         run: |
-          docker buildx build --platform linux/loong64 --build-arg VERSION=${{ env.app_version }} -t ${{ env.app_name }}-debian-loong64:${{ env.app_version }} --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max . --load
+          docker buildx build --platform linux/loong64 --build-arg BASE_IMAGE=ghcr.io/loong64/${{ matrix.os }}:${{ matrix.suite }}-slim --build-arg VERSION=${{ env.app_version }} -t ${{ env.app_name }}-${{ matrix.os }}-${{ matrix.suite }}:${{ env.app_version }}-loong64 --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max . --load
 
       - name: Upgrade Release
         run: |
-          docker run --rm -v $(pwd)/dist:/dist ${{ env.app_name }}-debian-loong64:${{ env.app_version }}
+          docker run --rm -v $(pwd)/dist:/dist ${{ env.app_name }}-${{ matrix.os }}-${{ matrix.suite }}:${{ env.app_version }}-loong64
           ls -al dist
           gh release upload ${{ env.app_version }} -R ${{ github.repository }} dist/*
         env:
