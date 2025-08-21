@@ -44,16 +44,15 @@ RUN --mount=type=cache,target=/root/.cache/ccache \
     set -x \
     && ./latxbuild/build-release.sh \
     && mkdir -p dist \
-    && mv lat-${VERSION}-*.tar.xz dist/lat-${VERSION}-${TARGETARCH}.tar.xz \
-    && cd dist \
-    && sha256sum lat-${VERSION}-${TARGETARCH}.tar.xz > lat-${VERSION}-${TARGETARCH}.tar.xz.sha256
+    && mv lat-${VERSION}-*.tar.xz dist/lat-${VERSION}-linux-${TARGETARCH}.tar.xz
 
 FROM base AS build-deb
 ARG TARGETARCH
 
 COPY debian debian
-RUN --mount=type=cache,target=/root/.cache/ccache \
-    set -x \
+RUN --mount=type=bind,source=scripts/gen-deb-changelog.sh,target=/usr/local/bin/gen-deb-changelog \
+    --mount=type=cache,target=/root/.cache/ccache \
+    gen-deb-changelog \
     && dpkg-buildpackage -b -rfakeroot -us -uc \
     && cd .. \
     && rm -rf lat
