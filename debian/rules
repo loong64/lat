@@ -39,6 +39,7 @@ override_dh_auto_build:
 	--disable-vhost-user \
 	--disable-vnc \
 	--enable-latx \
+	--enable-latx-avx-opt \
 	--enable-guest-base-zero \
 	--disable-debug-info \
 	--optimize-O1 \
@@ -59,6 +60,7 @@ override_dh_auto_build:
 	--disable-werror \
 	--enable-kzt \
 	--enable-latx \
+	--enable-latx-avx-opt \
 	--extra-ldflags=-ldl \
 	--optimize-O1
 	cd build64 && ninja -j$$(nproc)
