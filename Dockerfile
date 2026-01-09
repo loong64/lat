@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/loong64/debian:trixie-slim
+ARG BASE_IMAGE=ghcr.io/loong64/loongnix:25
 
 FROM ${BASE_IMAGE} AS base
 ARG TARGETARCH
