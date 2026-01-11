@@ -70,9 +70,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'debian' ]
+        os: [ 'loongnix' ]
         # suite: [ 'trixie', 'forky' ]
-        suite: [ 'trixie' ]
+        suite: [ '25' ]
 
     steps:
       - uses: actions/checkout@v4
