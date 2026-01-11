@@ -9,6 +9,7 @@ Homepage: https://github.com/lat-opensource/lat
 Package: latx-i386
 Architecture: loong64
 Provides: lat (= ${binary:Version})
+Replaces: lat (< ${binary:Version})
 Depends: ${shlibs:Depends}, ${misc:Depends}, latx-common
 Description: LATX emulator for i386 binaries
  This package provides the user-mode emulator for i386 binaries using LATX.
@@ -16,6 +17,7 @@ Description: LATX emulator for i386 binaries
 Package: latx-amd64
 Architecture: loong64
 Provides: lat (= ${binary:Version})
+Replaces: lat (< ${binary:Version})
 Depends: ${shlibs:Depends}, ${misc:Depends}, latx-common
 Description: LATX emulator for x86_64 binaries
  This package provides the user-mode emulator for x86_64 binaries using LATX.
