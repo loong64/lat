@@ -11,13 +11,12 @@ env:
   
 jobs:
   check-binaries:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       app_version: ${{ steps.get-version.outputs.app_version }}
       app_build: ${{ steps.check-release.outputs.app_build }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v6
 
       - name: Get Version
         id: get-version
@@ -70,12 +69,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'loongnix' ]
-        # suite: [ 'trixie', 'forky' ]
-        suite: [ '25' ]
+        os: [ 'debian', 'loongnix' ]
+        include:
+          - os: 'debian'
+            suite: 'trixie'
+          - os: 'loongnix'
+            suite: '25'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 

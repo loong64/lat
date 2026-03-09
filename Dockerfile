@@ -26,6 +26,7 @@ ARG DEPENDENCIES="         \
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update \
+    && apt-get install -y systemd-standalone-sysusers \
     && apt-get install -y ${DEPENDENCIES}
 
 ARG VERSION
