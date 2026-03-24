@@ -99,7 +99,7 @@ jobs:
           docker run --rm -v $(pwd)/dist:/dist ${{ env.app_name }}-${{ matrix.os }}-${{ matrix.suite }}:${{ env.app_version }}-loong64
           ls -al dist
           if [ "${{ matrix.os }}" != "debian" ]; then
-              rm -f dist/*.tar.xz
+              sudo rm -f dist/*.tar.xz
           fi
           gh release upload ${{ env.app_version }} -R ${{ github.repository }} dist/*
         env:
