@@ -21,7 +21,7 @@ jobs:
       - name: Get Version
         id: get-version
         run: |
-          app_version=$(curl -sSL "https://github.com/${{ env.app_repo }}/raw/refs/heads/master/VERSION")
+          app_version=$(curl -sSL "https://api.github.com/repos/${{ env.app_repo }}/tags" | grep -m 1 '"name":' | sed -E 's/.*"name": "([^"]+)".*/\1/')
           if [ -z "${app_version}" ] || [ "${app_version}" == "null" ]; then
             echo "Failed to get version"
             exit 1
